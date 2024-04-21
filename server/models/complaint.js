@@ -7,10 +7,6 @@ const complaintSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    category: {
-      type: String,
-      required: true,
-    },
     description: {
       type: String,
       required: true,
@@ -33,12 +29,15 @@ const complaintSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
-    reviews: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Review",
-      },
-    ],
+    review: {
+      type: String,
+      default: "",
+    },
+    rating: {
+      type: Number,
+      min: 1,
+      max: 5,
+    },
   },
   { timestamps: true }
 );

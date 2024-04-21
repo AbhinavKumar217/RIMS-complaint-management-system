@@ -28,6 +28,10 @@ const userSchema = new mongoose.Schema({
       return this.role === "contractor";
     },
   },
+  emailVerified: {
+    type: Boolean,
+    default: false,
+  },
   assignedComplaints: [
     {
       type: mongoose.Schema.Types.ObjectId,

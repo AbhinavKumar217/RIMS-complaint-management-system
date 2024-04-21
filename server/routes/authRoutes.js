@@ -5,10 +5,16 @@ const User = require("../models/user");
 const validateEmail = require("../validations/emailValidation");
 const validatePassword = require("../validations/passwordValidation");
 const jwt = require("jsonwebtoken");
+const sendEmail = require("../config/sendEmail");
+const crypto = require("crypto");
+
+const otpMap = new Map(); // Map to store email-OTP pairs in memory
+const otpExpiryMap = new Map(); // Map to store OTP expiration timestamps
 
 router.post("/register", async (req, res) => {
   try {
-    const { username, email, password, role, type, userImageUrl } = req.body;
+    const { username, email, password, role, category, userImageUrl } =
+      req.body;
 
     if (!validateEmail(email)) {
       return res.status(400).json({ message: "Invalid email format" });
@@ -25,6 +31,19 @@ router.post("/register", async (req, res) => {
       return res.status(400).json({ message: "User already exists" });
     }
 
+    // Generate OTP
+    const otp = crypto.randomBytes(3).toString("hex").toUpperCase(); // 6-digit OTP
+
+    // Send OTP to user's email
+    const subject = "Email Verification OTP";
+    const html = `<p>Your OTP for email verification is: <strong>${otp}</strong></p>`;
+    await sendEmail(email, subject, html);
+
+    // Store OTP data in Redis with expiration time (e.g., 5 minutes)
+    const expirationTime = Date.now() + 10 * 60 * 1000; // 10 minutes
+    otpMap.set(email, otp);
+    otpExpiryMap.set(email, expirationTime);
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = new User({
@@ -32,7 +51,7 @@ router.post("/register", async (req, res) => {
       email,
       password: hashedPassword,
       role,
-      type,
+      category,
       userImageUrl,
     });
 
@@ -42,7 +61,7 @@ router.post("/register", async (req, res) => {
       username: newUser.username,
       email: newUser.email,
       role: newUser.role,
-      type: newUser.type,
+      category: newUser.category,
       userImageUrl: newUser.userImageUrl,
     };
 
@@ -51,6 +70,36 @@ router.post("/register", async (req, res) => {
       .json({ message: "User registered successfully", user: visibleUser });
   } catch (error) {
     console.error("Error registering user:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// Verify email route
+router.post("/verify-email", async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    const storedOTP = otpMap.get(email);
+    const expirationTime = otpExpiryMap.get(email);
+
+    if (!storedOTP || !expirationTime || expirationTime < Date.now()) {
+      return res.status(400).json({ message: "OTP expired or invalid" });
+    }
+
+    if (storedOTP !== otp) {
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
+
+    await User.updateOne({ email }, { $set: { emailVerified: true } });
+
+    otpMap.delete(email);
+    otpExpiryMap.delete(email);
+
+    await sendEmail(email, "Email Verified Notification", "Your account has been successfully verified. Feel free to login to your account.");
+
+    res.status(200).json({ message: "Email verified successfully" });
+  } catch (error) {
+    console.error("Error verifying email:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 });
@@ -69,6 +118,11 @@ router.post("/login", async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    // Check if user's email is verified
+    if (!user.emailVerified) {
+      return res.status(403).json({ message: "Email not verified" });
+    }
+
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
@@ -85,7 +139,7 @@ router.post("/login", async (req, res) => {
       username: user.username,
       email: user.email,
       role: user.role,
-      type: user.type,
+      category: user.category,
       userImageUrl: user.userImageUrl,
     };
 
