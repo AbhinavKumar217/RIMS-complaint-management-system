@@ -7,6 +7,9 @@ const validatePassword = require("../validations/passwordValidation");
 const jwt = require("jsonwebtoken");
 const sendEmail = require("../config/sendEmail");
 const crypto = require("crypto");
+const cron = require("node-cron");
+const tokenBlacklist = require("../models/tokenBlacklist");
+const { authMiddleware } = require("../middleware/authMiddleware");
 
 const otpMap = new Map(); // Map to store email-OTP pairs in memory
 const otpExpiryMap = new Map(); // Map to store OTP expiration timestamps
@@ -95,7 +98,11 @@ router.post("/verify-email", async (req, res) => {
     otpMap.delete(email);
     otpExpiryMap.delete(email);
 
-    await sendEmail(email, "Email Verified Notification", "Your account has been successfully verified. Feel free to login to your account.");
+    await sendEmail(
+      email,
+      "Email Verified Notification",
+      "Your account has been successfully verified. Feel free to login to your account."
+    );
 
     res.status(200).json({ message: "Email verified successfully" });
   } catch (error) {
@@ -147,6 +154,38 @@ router.post("/login", async (req, res) => {
   } catch (error) {
     console.error("Error logging in:", error);
     res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+router.post("/logout", authMiddleware, async (req, res) => {
+  try {
+    const token = req.header("Authorization").replace("Bearer ", "");
+
+    const expirationTime = new Date();
+    expirationTime.setHours(expirationTime.getHours() + 1);
+
+    const blacklistToken = new tokenBlacklist({
+      token,
+      expiresAt: expirationTime,
+    });
+    await blacklistToken.save();
+
+    res.status(200).json({ message: "Logout successful" });
+  } catch (error) {
+    console.error("Error logging out:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+cron.schedule("0 * * * *", async () => {
+  try {
+    const now = new Date();
+
+    const result = await tokenBlacklist.deleteMany({ expiresAt: { $lt: now } });
+
+    console.log(`Removed ${result.deletedCount} expired blacklisted tokens.`);
+  } catch (error) {
+    console.error("Error removing expired blacklisted tokens:", error);
   }
 });
 

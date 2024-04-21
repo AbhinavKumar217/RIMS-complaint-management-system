@@ -31,6 +31,28 @@ router.get("/:userId", authMiddleware, async (req, res) => {
   }
 });
 
+router.get("/category/:categoryId", authMiddleware, verifyAdmin, async (req, res) => {
+  try {
+    const { categoryId } = req.params;
+
+    // Query the database for users who are contractors and belong to the specified category
+    const contractors = await User.find({
+      role: "contractor",
+      category: categoryId,
+    });
+
+    if (!contractors || contractors.length === 0) {
+      return res.status(404).json({ message: "No contractors found for this category" });
+    }
+
+    // Return the list of contractors
+    res.status(200).json({ contractors });
+  } catch (error) {
+    console.error("Error fetching contractors by category:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
 // Route to update a user by userId
 router.put("/:userId", authMiddleware, async (req, res) => {
   try {

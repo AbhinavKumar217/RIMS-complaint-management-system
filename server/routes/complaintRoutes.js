@@ -200,6 +200,9 @@ router.post("/solved/:complaintId", authMiddleware, verifyContractor, async (req
       return res.status(404).json({ message: "Complaint not found" });
     }
 
+    console.log(complaint.contractor)
+    console.log(req.user._id.toString())
+
     // Check if the contractor is assigned to the complaint
     if (complaint.contractor.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: "Access forbidden. Only the assigned contractor can change the status." });
@@ -259,28 +262,24 @@ router.post("/review/:complaintId", authMiddleware, async (req, res) => {
     const { complaintId } = req.params;
     const { review, rating } = req.body;
 
-    // Validate rating
     if (rating < 1 || rating > 5) {
       return res.status(400).json({ message: "Rating must be between 1 and 5" });
     }
 
-    // Find the complaint by its ID
     const complaint = await Complaint.findById(complaintId);
     if (!complaint) {
       return res.status(404).json({ message: "Complaint not found" });
     }
 
-    // Ensure the user posting the review is the same as the user who created the complaint
     if (complaint.user.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: "Access forbidden. Only the user who created the complaint can post a review" });
     }
 
-    // Ensure the complaint status is either "solved" or "failed"
     if (complaint.status !== "solved" && complaint.status !== "failed") {
       return res.status(400).json({ message: "Cannot post review. Complaint must be solved or failed" });
     }
 
-    // Update the complaint with the review and rating
+
     complaint.review = review;
     complaint.rating = rating;
     await complaint.save();
@@ -288,6 +287,65 @@ router.post("/review/:complaintId", authMiddleware, async (req, res) => {
     res.status(200).json({ message: "Review added successfully", complaint });
   } catch (error) {
     console.error("Error adding review to complaint:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+router.get("/user/:userId", authMiddleware, async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Fetch complaints created by the user
+    const complaints = await Complaint.find({ user: userId });
+
+    if (!complaints || complaints.length === 0) {
+      return res.status(404).json({ message: "No complaints found for this user" });
+    }
+
+    res.status(200).json({ complaints });
+  } catch (error) {
+    console.error("Error fetching complaints by user:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+router.get("/category/:categoryId", authMiddleware, async (req, res) => {
+  try {
+    const { categoryId } = req.params;
+
+    // Fetch complaints belonging to the specified category
+    const complaints = await Complaint.find({ category: categoryId });
+
+    if (!complaints || complaints.length === 0) {
+      return res.status(404).json({ message: "No complaints found for this category" });
+    }
+
+    res.status(200).json({ complaints });
+  } catch (error) {
+    console.error("Error fetching complaints by category:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+router.get("/contractor/:contractorId", authMiddleware, verifyContractor, async (req, res) => {
+  try {
+    const { contractorId } = req.params;
+
+    // Ensure the authenticated user is the contractor specified in the request
+    if (req.user._id.toString() !== contractorId) {
+      return res.status(403).json({ message: "Access forbidden. You can only view complaints assigned to you" });
+    }
+
+    // Fetch complaints assigned to the contractor
+    const complaints = await Complaint.find({ contractor: contractorId });
+
+    if (!complaints || complaints.length === 0) {
+      return res.status(404).json({ message: "No complaints found for this contractor" });
+    }
+
+    res.status(200).json({ complaints });
+  } catch (error) {
+    console.error("Error fetching complaints by contractor:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 });
