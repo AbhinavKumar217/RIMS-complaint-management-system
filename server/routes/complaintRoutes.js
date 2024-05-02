@@ -145,16 +145,44 @@ router.delete("/:complaintId", authMiddleware, async (req, res) => {
   }
 });
 
+router.delete("/admin/:complaintId", authMiddleware, verifyAdmin, async (req, res) => {
+  try {
+    const complaintId = req.params.complaintId;
+    const complaint = await Complaint.findById(complaintId);
+    if (!complaint) {
+      return res.status(404).json({ message: "Complaint not found" });
+    }
+
+    await Complaint.findByIdAndDelete(complaintId);
+
+    const userId = complaint.user;
+    const user = await User.findById(userId);
+
+    await sendEmail(user.email, "Complaint Delete Notification", "Admin has deleted your complaint.");
+
+    res.status(200).json({ message: "Complaint deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting complaint:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
 router.post("/assign/:complaintId", authMiddleware, verifyAdmin, async (req, res) => {
   try {
     const { contractorId } = req.body;
     const { complaintId } = req.params;
 
     // Validate contractorId and complaintId
-    if (!contractorId || !complaintId) {
+    if (!contractorId) {
       return res
         .status(400)
-        .json({ message: "Contractor ID and complaint ID are required" });
+        .json({ message: "Contractor ID is required" });
+    }
+
+    if (!complaintId) {
+      return res
+        .status(400)
+        .json({ message: "Complaint ID is required" });
     }
 
     // Check if the complaint exists
