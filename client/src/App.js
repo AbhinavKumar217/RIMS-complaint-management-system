@@ -17,6 +17,10 @@ import ViewAllComplaints from "./pages/adminPages/viewAllComplaints/ViewAllCompl
 import AssignComplaint from "./pages/adminPages/assignComplaints/AssignComplaint";
 import ManageUsers from "./pages/adminPages/manageUsers/ManageUsers";
 import ManageCategories from "./pages/adminPages/manageCategories/ManageCategories";
+import PatientComplaints from "./pages/adminPages/patientComplaints/PatientComplaints";
+import FacultyComplaints from "./pages/adminPages/facultyComplaints/FacultyComplaints";
+import ManageFaculty from "./pages/adminPages/manageFaculty/ManageFaculty";
+
 function App() {
   return (
     <div className="app-background">
@@ -108,6 +112,30 @@ function App() {
             element={
               <AdminRoute>
                 <ManageCategories />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/patientComplaints"
+            element={
+              <AdminRoute>
+                <PatientComplaints />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/facultyComplaints"
+            element={
+              <AdminRoute>
+                <FacultyComplaints />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/faculty"
+            element={
+              <AdminRoute>
+                <ManageFaculty />
               </AdminRoute>
             }
           />

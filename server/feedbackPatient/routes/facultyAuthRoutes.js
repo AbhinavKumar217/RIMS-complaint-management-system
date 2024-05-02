@@ -94,6 +94,7 @@ router.post("/login", async (req, res) => {
     const token = jwt.sign({ facultyId: faculty._id }, jwtSecret, { expiresIn: "1h" });
 
     const visibleFaculty = {
+      _id:faculty._id,
       username: faculty.username,
       email: faculty.email,
       department: faculty.department,

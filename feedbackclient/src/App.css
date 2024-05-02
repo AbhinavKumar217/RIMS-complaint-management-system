@@ -1,0 +1,14 @@
+/* App.css */
+.app-background {
+    background: 
+          /* The rgba() function allows you to set the color and opacity */ linear-gradient(
+        rgba(255, 255, 255, 0.4),
+        rgba(255, 255, 255, 0.3)
+      ),
+      url("../../client/src/backgroundImg.jpg"); /* Replace 'your-image.jpg' with the image file name */
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      background-size: cover;
+  }
+  

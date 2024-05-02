@@ -6,20 +6,16 @@ import Cookies from "js-cookie";
 
 function NavbarComponent() {
   const navigate = useNavigate();
-  const user = JSON.parse(Cookies.get("user") || "null");
-  const role = JSON.parse(Cookies.get("role") || "null");
-
-  console.log(role);
+  const faculty = JSON.parse(Cookies.get("faculty") || "null");
 
   const handleLogout = async () => {
     try {
       // Call the logout API endpoint
-      await apiWithAuth.post("/api/auth/logout");
+      await apiWithAuth.post("/api/feedback/auth/logout");
 
       // Remove cookies and navigate to login
-      Cookies.remove("user");
-      Cookies.remove("token");
-      Cookies.remove("role");
+      Cookies.remove("faculty");
+      Cookies.remove("facultyToken");
       navigate("/login");
     } catch (error) {
       console.error("Logout failed:", error);
@@ -30,36 +26,25 @@ function NavbarComponent() {
     <Navbar bg="dark" variant="dark" expand="lg" className="mb-4">
       <Container fluid>
         {/* Left side of the navbar */}
-        <Navbar.Brand href="/">RIMS CMS</Navbar.Brand>
+        <Navbar.Brand href="/">RIMS FS</Navbar.Brand>
         <Navbar.Toggle aria-controls="navbarNav" />
         <Navbar.Collapse id="navbarNav">
           <Nav className="me-auto">
             <Nav.Link href="https://rimsranchi.ac.in/">About</Nav.Link>
             <Nav.Link href="https://rimsranchi.ac.in/contact.php">Contact</Nav.Link>
-            <Nav.Link href="">FS</Nav.Link>
-            {role === "admin" && (
-              <Dropdown>
-                <Dropdown.Toggle variant="dark" id="admin-dropdown">
-                  Admin
-                </Dropdown.Toggle>
-                <Dropdown.Menu>
-                  <Dropdown.Item href="/admin/users">User Info Panel</Dropdown.Item>
-                  <Dropdown.Item href="/admin/complaints">Complaints Info Panel</Dropdown.Item>
-                  <Dropdown.Item href="/admin/categories">Category Info Panel</Dropdown.Item>
-                  {/* Add more admin menu items here as needed */}
-                </Dropdown.Menu>
-              </Dropdown>
-            )}
+            <Nav.Link href="/patientComplaint">Patient Complaint</Nav.Link>
+            <Nav.Link href="/facultyComplaint">Faculty Complaint</Nav.Link>
+            <Nav.Link href="">RMS</Nav.Link>
           </Nav>
 
           {/* Right side of the navbar */}
           <Nav className="align-items-center">
-            {user ? (
+            {faculty ? (
               // If user is logged in, show user profile image and logout button
               <>
-                <Nav.Link href="/userSettings">
+                <Nav.Link href="/facultySettings">
                 <Image
-                  src={user.userImageUrl}
+                  src="https://t4.ftcdn.net/jpg/02/29/75/83/360_F_229758328_7x8jwCwjtBMmC6rgFzLFhZoEpLobB6L8.jpg"
                   roundedCircle
                   height={30}
                   width={30}

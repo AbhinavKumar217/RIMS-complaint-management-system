@@ -249,6 +249,39 @@ const HomePage = () => {
                 </Button>
               </NavLink>
             </Col>
+            <Col sm={4} md={6}>
+              <NavLink href="/admin/patientComplaints">
+                <Button
+                  variant="warning"
+                  className="w-100 mb-3"
+                  style={{ height: "300px" }}
+                >
+                  Patient Complaints
+                </Button>
+              </NavLink>
+            </Col>
+            <Col sm={4} md={6}>
+              <NavLink href="/admin/facultyComplaints">
+                <Button
+                  variant="dark"
+                  className="w-100 mb-3"
+                  style={{ height: "300px" }}
+                >
+                  Faculty Feedback
+                </Button>
+              </NavLink>
+            </Col>
+            <Col sm={4} md={6}>
+              <NavLink href="/admin/faculty">
+                <Button
+                  variant="danger"
+                  className="w-100 mb-3"
+                  style={{ height: "300px" }}
+                >
+                  Manage Faculty
+                </Button>
+              </NavLink>
+            </Col>
           </>
         )}
 
