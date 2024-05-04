@@ -25,7 +25,7 @@ function Login() {
       );
       Cookies.set("facultyToken", response.data.token, expiresInOneHour);
 
-      navigate("/facultyComplaint");
+      navigate("/");
     } catch (error) {
       console.error("Login failed:", error);
     }

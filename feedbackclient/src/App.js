@@ -18,7 +18,7 @@ function App() {
           <Route path="/register" Component={Register} />
           <Route path="/patientComplaint" Component={PatientComplaint} />
           <Route
-            path="/facultyComplaint"
+            path="/"
             element={
               <PrivateRoute>
                 <FacultyComplaint />

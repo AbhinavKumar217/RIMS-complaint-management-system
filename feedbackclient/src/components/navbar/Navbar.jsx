@@ -33,7 +33,7 @@ function NavbarComponent() {
             <Nav.Link href="https://rimsranchi.ac.in/">About</Nav.Link>
             <Nav.Link href="https://rimsranchi.ac.in/contact.php">Contact</Nav.Link>
             <Nav.Link href="/patientComplaint">Patient Complaint</Nav.Link>
-            <Nav.Link href="/facultyComplaint">Faculty Complaint</Nav.Link>
+            <Nav.Link href="/">Faculty Complaint</Nav.Link>
             <Nav.Link href="">RMS</Nav.Link>
           </Nav>
 
